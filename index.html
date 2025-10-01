@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Phone‑AGI Mockup — ループ文章生成器 + 外部解析</title>
+  <title>Phone-AGI Mockup — ループ文章生成器 + 外部解析</title>
   <style>
     :root{
       --bg:#0b0b10; --card:#12121a; --ink:#e8e8f0; --muted:#a8a8c0; --accent:#6b46c1; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
@@ -31,7 +31,6 @@
     meter{width:100%;height:12px}
     .kv{display:grid;grid-template-columns:120px 1fr;gap:6px;font-size:13px}
     textarea{width:100%;min-height:40vh;background:#0e0e15;color:var(--ink);border:1px solid #222336;border-radius:12px;padding:12px;line-height:1.6;resize:vertical}
-    input[type="text"], input[type="url"]{width:100%;padding:10px;border-radius:10px;border:1px solid #2b2b3e;background:#0e0e15;color:var(--ink)}
     .mono{font-family:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace}
     .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px dashed #2b2b3e;border-radius:10px}
     .small{font-size:12px;color:#b9b9cc}
@@ -42,8 +41,8 @@
 <body>
   <header>
     <div class="wrap">
-      <h1>Phone‑AGI Mockup（自律思考ふう）— センサー×記憶×外部解析 ループ文章生成器</h1>
-      <p>スマホの <strong>カメラ/マイク/モーション/位置</strong> と <strong>ローカル記憶</strong>、さらに <strong>外部テキスト/URLのキーワード・要約</strong> を混ぜ、<em>シニフィエ⇄意識GUI⇄シニフィアン</em> の再帰で長文を自動生成するモックアップ（ブラウザのみ）。</p>
+      <h1>Phone-AGI Mockup（自律思考ふう）— センサー×記憶×<u>外部解析</u> ループ文章生成器</h1>
+      <p>スマホの <strong>カメラ/マイク/動きセンサー</strong> と <strong>ローカル記憶</strong>、さらに <strong>外部テキストのキーワード/要約</strong> を混ぜて、<em>シニフィエ⇄意識GUI⇄シニフィアン</em> を再帰ループ。</p>
     </div>
   </header>
 
@@ -89,19 +88,14 @@
       </div>
     </section>
 
-    <!-- 中：外部解析（URL/テキスト） -->
+    <!-- 中：外部解析（テキストを混ぜる） -->
     <section class="card">
       <div class="row">
         <strong>外部解析</strong>
         <span class="badge" id="extStatus">idle</span>
       </div>
       <div class="hr"></div>
-      <div class="row">
-        <input id="extUrl" type="url" placeholder="解析したいURL（CORSで失敗する場合あり）" style="flex:1;min-width:200px">
-        <button id="btnFetch" class="ghost">🔎 URL解析</button>
-      </div>
-      <div class="row small muted">※ CORS で失敗したら、下のテキスト欄に貼り付けてください。</div>
-      <textarea id="extText" placeholder="外部テキストをここに貼り付け→『テキスト解析』を押すと、キーワード/要約を抽出し、シニフィエ/シニフィアン生成に混ぜます。"></textarea>
+      <textarea id="extText" placeholder="ここに外部テキストを貼り付け→『テキスト解析』でキーワード/要約を抽出し、生成ループに混ぜます。"></textarea>
       <div class="row">
         <button id="btnAnalyze" class="primary">🧠 テキスト解析</button>
         <label class="pill small">重み <input id="extWeight" type="range" min="0" max="1" step="0.05" value="0.6" style="width:160px"></label>
@@ -131,7 +125,7 @@
       </div>
       <textarea id="out" placeholder="ここに“意識 GUI”のテキストが流れます…"></textarea>
       <div class="hr"></div>
-      <div class="small">説明：左のセンサーや中段の外部解析から <em>特徴量→シニフィエ</em> を抽出。右のテキストは <em>意識（GUI）</em>。そこから <em>シニフィアン</em> を生成し、さらにGUIへ反映→記憶へ保存→次ステップで参照…という再帰ループで“自律っぽく”長文を継続生成します。</div>
+      <div class="small">説明：左のセンサー/中段の外部解析から <em>特徴量→シニフィエ</em> を抽出。右のテキストは <em>意識（GUI）</em>。そこから <em>シニフィアン</em> を生成→GUIへ反映→記憶へ保存→次ステップで参照…を1.6秒ピッチで再帰。</div>
     </section>
   </main>
 
@@ -192,6 +186,7 @@
     videoEl.srcObject=null;
   }
 
+  // === 特徴量抽出（カメラ：明るさ/主色, マイク：RMS, モーション：加速度） ===
   const feat = { bright: null, hsv: null, rms: 0, accel: 0, geo: null };
   let geoWatchId=null;
   function onMotion(e){
@@ -233,7 +228,7 @@
     const rms = Math.min(1, Math.sqrt(sum/dataArray.length)); feat.rms = rms; document.getElementById('vu').value = rms;
   }
 
-  // === “意味生成(シニフィエ)”：センサー→記述子 ================================
+  // === “意味生成(シニフィエ)”：センサー→記述子 =================================
   function signifiedFromFeatures(f){
     const tags=[];
     if(f.bright!=null){ if(f.bright<0.2) tags.push('暗'); else if(f.bright<0.5) tags.push('穏'); else tags.push('明'); }
@@ -244,34 +239,24 @@
     return tags; // これが“シニフィエ”候補
   }
 
-  // === 外部解析ユーティリティ ===============================================
+  // === 外部解析ユーティリティ（ローカル軽量） ================================
   const jaStop = new Set(['こと','もの','よう','ため','それ','これ','あれ','ので','です','ます','する','いる','ある','なる','そして','また','ので','から','たり','だが','しかし','により','など','なら','では','ではない','ない','的','的な','的に']);
   const enStop = new Set(['the','a','an','and','or','but','to','of','in','on','for','with','as','is','are','was','were','be','been','being','by','at','from','that','this','it','its','into']);
   let externalCtx = { keywords:[], summary:[], tags:[], weight:0.6 };
-
   function tokenizeJaEn(text){
     const tokens = (text.toLowerCase().match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}a-z0-9]{2,}/gu) || []);
     return tokens.filter(t=>!jaStop.has(t)&&!enStop.has(t));
   }
-  function extractKeywords(text, topN=10){
+  function extractKeywords(text, topN=12){
     const freq = new Map();
     for(const t of tokenizeJaEn(text)){ freq.set(t, (freq.get(t)||0)+1); }
     return Array.from(freq.entries()).sort((a,b)=>b[1]-a[1]).slice(0,topN).map(([k])=>k);
   }
-  function splitSentences(text){
-    return (text.match(/[^。.!?\n]+[。.!?]?/g) || []).map(s=>s.trim()).filter(Boolean);
-  }
+  function splitSentences(text){ return (text.match(/[^。.!?\n]+[。.!?]?/g) || []).map(s=>s.trim()).filter(Boolean); }
   function summarize(text, kwords){
     const sents = splitSentences(text);
     const scored = sents.map(s=>({s,score:kwords.reduce((acc,w)=>acc+(s.includes(w)?1:0),0)}));
     return scored.sort((a,b)=>b.score-a.score).slice(0,3).map(o=>o.s);
-  }
-  async function fetchUrlText(url){
-    const res = await fetch(url, {mode:'cors'});
-    const txt = await res.text();
-    const title = (txt.match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[])[1]||'';
-    const body = (txt.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' '));
-    return (title+'\n'+body).replace(/\s+/g,' ').trim();
   }
   function updateExternalCtxFromText(text){
     const kws = extractKeywords(text, 12);
@@ -279,36 +264,40 @@
     externalCtx.keywords = kws;
     externalCtx.summary = sum;
     externalCtx.tags = kws.slice(0,5).map(w=>`外:${w}`);
-    document.getElementById('extKeywords').textContent = kws.join(', ');
-    document.getElementById('extSummary').innerHTML = sum.map(s=>`• ${s}`).join('<br>');
-    document.getElementById('extBrief').textContent = `k=${kws.length} / s=${sum.length}`;
+    const kwEl = document.getElementById('extKeywords'); if(kwEl) kwEl.textContent = kws.join(', ');
+    const sumEl = document.getElementById('extSummary'); if(sumEl) sumEl.innerHTML = sum.map(s=>`• ${s}`).join('<br>');
+    const brEl = document.getElementById('extBrief'); if(brEl) brEl.textContent = `k=${kws.length} / s=${sum.length}`;
+    const stEl = document.getElementById('extStatus'); if(stEl) stEl.textContent = 'analyzed';
   }
 
-  // === “記号化(シニフィアン)”：テンプレ生成器 ================================
+  // === “記号化(シニフィアン)”：テンプレ生成器 ==================================
   const TEMPLATES = [
-    // 外部文脈に触れるテンプレ（外部があれば優先）
-    ({tags})=> externalCtx.summary.length? `外部の話題（${externalCtx.keywords.slice(0,3).join(' / ')}）が背後で鳴っている。GUIはそれを参照しつつ現在地を書き換える。` : null,
-    ({tags,lastLine})=>`いまの場は「${tags.join('・')}」。${pick(['身体が先に反応している。','思考は半歩遅れて追いつく。','手触りが意味を先導する。'])}`,
+    ({tags,lastLine})=>`いまの場は「${tags.join('・')}」。${pick([
+      '身体が先に反応している。','思考は半歩遅れて追いつく。','手触りが意味を先導する。'])}`,
     ({tags})=>`視覚は ${tags.includes('明')?'明滅の粒':'影の縁'} を拾い、聴覚は ${tags.includes('喧')?'街のうねり':'呼吸のリズム'} を数える。`,
     ({tags})=>`${pick(['名づける前の感触が','比喩の手前で','語の輪郭より前に'])} 立ち上がる合意を、ここでは “暫定の意味” と呼ぶ。`,
     ({tags})=>`GUI（意識）は、その暫定を <記憶> に押しピンで留める（${new Date().toLocaleTimeString()}）。`,
     ({tags,lastLine})=>`さっきの文は ${pick(['別の文になりたがっている','まだ言い足りない顔をしている','次の比喩を要求している'])}。${lastLine?`「${lastLine.slice(0,24)}…」の裏側で発酵が続く。`:''}`,
     ({tags})=>`ここで操作は不要。センサーが流れ、意味は巡回し、記号が更新される。`,
     ({tags})=>`${pick(['窓の外の温度','ポケットの振動','足下の慣性'])} が一句を修正し、文脈が再配線される。`,
-    ({tags})=> externalCtx.summary.length? `要約：${externalCtx.summary.join(' / ')}` : null,
     ({tags})=>`そしてループは続く——<シニフィエ> → <GUI> → <シニフィアン> → <記憶> → <シニフィエ> …。`
   ];
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
   function materializeSignifier(ctx){
     const {tags,lastLine} = ctx;
-    const pool = TEMPLATES.map(t=>t({tags,lastLine})).filter(Boolean);
-    const t = pool[Math.floor(Math.random()*pool.length)] || '（…）';
-    return t;
+    const pool = [];
+    if(externalCtx.summary && externalCtx.summary.length){
+      pool.push(`外部の話題（${externalCtx.keywords.slice(0,3).join(' / ')}）が背後で鳴っている。GUIはそれを参照しつつ現在地を書き換える。`);
+      pool.push(`要約：${externalCtx.summary.join(' / ')}`);
+    }
+    for(const t of TEMPLATES){ const line = t({tags,lastLine}); if(line) pool.push(line); }
+    const pickable = pool.filter(Boolean);
+    return pickable[Math.floor(Math.random()*pickable.length)] || '（…）';
   }
 
   // === ループ制御：意識GUIのテキストを更新し続ける ============================
-  let running=false; let stepTimer=null; let lastLine='';
+  let running=false, stepTimer=null; let lastLine='';
   const outEl = document.getElementById('out');
   const statusEl = document.getElementById('status');
 
@@ -329,11 +318,12 @@
     const mem = loadMem();
     const recent = mem.slice(-5).flatMap(m=>m.tags||[]);
 
+    // 外部タグ（重みで確率採用）
     const w = externalCtx.weight ?? 0.6;
     const ext = externalCtx.tags || [];
     const extPick = ext.filter(()=>Math.random()<w);
 
-    const mergedTags = Array.from(new Set([ ...tagsNow, ...recent, ...extPick ]));
+    const mergedTags = Array.from(new Set([...tagsNow, ...recent, ...extPick]));
 
     const line = materializeSignifier({tags:mergedTags,lastLine});
 
@@ -366,29 +356,18 @@
     await stopSensors();
   });
   document.getElementById('btnClearMem').addEventListener('click', ()=>{ saveMem([]); updateMemBadge(); });
-  updateMemBadge();
 
-  // === 外部解析 UI 配線 ======================================================
-  document.getElementById('extWeight').addEventListener('input', (e)=>{ externalCtx.weight = parseFloat(e.target.value); });
-  document.getElementById('btnAnalyze').addEventListener('click', ()=>{
+  // 外部解析 UI
+  const extWeightEl = document.getElementById('extWeight');
+  if(extWeightEl){ extWeightEl.addEventListener('input', (e)=>{ externalCtx.weight = parseFloat(e.target.value); }); }
+  const analyzeBtn = document.getElementById('btnAnalyze');
+  if(analyzeBtn){ analyzeBtn.addEventListener('click', ()=>{
     const t = document.getElementById('extText').value.trim();
-    if(!t){ document.getElementById('extStatus').textContent='no text'; return; }
+    if(!t){ const stEl = document.getElementById('extStatus'); if(stEl) stEl.textContent='no text'; return; }
     updateExternalCtxFromText(t);
-    document.getElementById('extStatus').textContent='analyzed';
-  });
-  document.getElementById('btnFetch').addEventListener('click', async ()=>{
-    const url = document.getElementById('extUrl').value.trim();
-    if(!url){ document.getElementById('extStatus').textContent='no url'; return; }
-    try{
-      document.getElementById('extStatus').textContent='fetching…';
-      const txt = await fetchUrlText(url);
-      document.getElementById('extText').value = txt.slice(0,20000);
-      updateExternalCtxFromText(txt);
-      document.getElementById('extStatus').textContent='ok';
-    }catch(e){
-      document.getElementById('extStatus').textContent='CORS error';
-    }
-  });
+  }); }
+
+  updateMemBadge();
   </script>
 </body>
 </html>
